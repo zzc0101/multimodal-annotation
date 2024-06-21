@@ -9,7 +9,7 @@ from starlette.staticfiles import StaticFiles
 app = FastAPI()
 
 # 设置静态文件路径，指向 static 文件夹
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # 设置模板目录
 templates = Jinja2Templates(directory="templates")

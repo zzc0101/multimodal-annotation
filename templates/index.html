@@ -1,66 +1,254 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>多模态标注工具</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='css/element-ui.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header-title {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin-bottom: 30px;
+        }
+        .button-container .el-button {
+            flex: 1 1 30%;
+            margin: 10px;
+            font-size: 20px;
+            padding: 20px;
+            background-color: #ffc56e;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease-in-out;
+        }
+        .button-container .el-button:hover {
+            background-color: #fed09d;
+            transform: translateY(-2px);
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        .info-section {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+        .info-section h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .info-section p {
+            color: #666;
+            line-height: 1.6;
+        }
+    </style>
 </head>
-    <body>
-        <div>
-            <div style="text-align: center; margin-bottom: 20px;">
-                <h1>中国铁塔内部多模态标注工具</h1>
-            </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
-                <button style="flex: 1;
-                               margin-right: 5px;
-                               border: none;
-                               padding: 20px 30px;
-                               font-size: 30px;
-                               background-color: #ffc56e;
-                               color: #fff;
-                               cursor: pointer;
-                               border-radius: 8px;
-                               box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-                               transition: background-color 0.2s ease-in-out;
-                               line-height: 150px;" 
-                        onmouseover="this.style.backgroundColor='#fed09d';"
-                        onmouseout="this.style.backgroundColor='#ffc56e';"
-                        onclick="window.location.href='http://127.0.0.1:{{server_port}}/qaFilter'">问答筛选</button>
-    
-                <button style="flex: 1;
-                               margin-left: 5px;
-                               border: none;
-                               padding: 20px 30px;
-                               font-size: 30px;
-                               background-color: #ffc56e;
-                               color: #fff;
-                               cursor: pointer;
-                               border-radius: 8px;
-                               box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-                               transition: background-color 0.2s ease-in-out;
-                               line-height: 150px;" 
-                        onmouseover="this.style.backgroundColor='#fed09d';"
-                        onmouseout="this.style.backgroundColor='#ffc56e';"
-                        onclick="window.location.href='http://127.0.0.1:{{server_port}}/qa'">问答标注</button>
-            </div>
-            <div style="display: flex; justify-content: space-between;">
-                <button style="flex: 1;
-                               margin-right: 5px;
-                               border: none;
-                               padding: 20px 30px;
-                               font-size: 30px;
-                               background-color: #ffc56e;
-                               color: #fff;
-                               cursor: pointer;
-                               border-radius: 8px;
-                               box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-                               transition: background-color 0.2s ease-in-out;
-                               line-height: 150px;" 
-                        onmouseover="this.style.backgroundColor='#fed09d';"
-                        onmouseout="this.style.backgroundColor='#ffc56e';"
-                        onclick="window.location.href='http://127.0.0.1:{{server_port}}/translate'">中英文对照标注</button>
-            </div>
+<body>
+    <div id="app" class="container">
+        <div class="header-title">
+            <h1>多模态标注工具</h1>
         </div>
-    </body>
+        <div class="button-container">
+            <el-button @click="navigateTo('qaFilter')">问答筛选</el-button>
+            <el-button @click="navigateTo('qa')">问答标注</el-button>
+            <el-button @click="navigateTo('translate')">中英文对照标注</el-button>
+        </div>
+        <div class="info-section">
+            <h2>多模态标注工具介绍</h2>
+            <p>欢迎使用多模态标注工具。本工具旨在帮助用户进行各种类型的数据标注工作，包括问答筛选、问答标注和中英文对照标注。您可以通过点击上面的按钮进入相应的标注页面。</p>
+            <ol>
+                <li>1</li>
+                <li>2</li>
+                <li>3</li>
+            </ol>
+            <p>如果您在使用过程中有任何问题或建议，请通过我们的联系页面与我们取得联系。我们致力于提供最佳的用户体验，并期待您的反馈。</p>
+        </div>
+    </div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            methods: {
+                navigateTo(path) {
+                    window.location.href = `http://127.0.0.1:{{server_port}}/${path}`;
+                }
+            }
+        });
+    </script>
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ data }}</title>
+    <!-- 引用在线的 Element-UI 和 Vue -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(270deg, #ff7e5f, #feb47b, #86a8e7, #91eae4);
+            background-size: 600% 600%;
+            animation: gradientBG 20s ease infinite;
+            margin: 0;
+            padding: 0;
+        }
+
+        @keyframes gradientBG {
+            0% {
+                background-position: 0% 50%;
+            }
+            25% {
+                background-position: 50% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            75% {
+                background-position: 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header-title {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .header-title h1 {
+            display: inline-block;
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            font-size: 36px;
+            font-weight: bold;
+        }
+
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin-bottom: 30px;
+        }
+
+        .button-container .el-button {
+            flex: 1 1 30%;
+            margin: 10px;
+            font-size: 20px;
+            padding: 20px;
+            background-color: #ffc56e;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .button-container .el-button:hover {
+            background-color: #fed09d;
+            transform: translateY(-2px);
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-section {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+            overflow: hidden;
+        }
+
+        .info-section h2 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .info-section p {
+            color: #666;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="container">
+        <div class="header-title">
+            <h1>多模态标注工具</h1>
+        </div>
+        <div class="button-container">
+            <el-button @click="navigateTo('qaFilter')">问答筛选</el-button>
+            <el-button @click="navigateTo('qa')">问答标注</el-button>
+            <el-button @click="navigateTo('translate')">中英文对照标注</el-button>
+        </div>
+        <div class="info-section">
+            <h2>工具介绍</h2>
+            <p id="typed-text"></p>
+        </div>
+    </div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            mounted() {
+                this.typeText(
+                    "欢迎使用多模态标注工具。本工具旨在帮助用户进行各种类型的数据标注工作，包括问答筛选、问答标注和中英文对照标注。您可以通过点击上面的按钮进入相应的标注页面。\n如果您在使用过程中有任何问题或建议，请通过我们的联系页面与我们取得联系。我们致力于提供最佳的用户体验，并期待您的反馈。",
+                    document.getElementById('typed-text')
+                );
+            },
+            methods: {
+                navigateTo(path) {
+                    window.location.href = `http://127.0.0.1:{{server_port}}/${path}`;
+                },
+                typeText(text, element) {
+                    let index = 0;
+                    function type() {
+                        if (index < text.length) {
+                            element.textContent += text[index];
+                            index++;
+                            setTimeout(type, 50); // Adjust typing speed here
+                        }
+                    }
+                    type();
+                }
+            }
+        });
+    </script>
+</body>
 </html>
