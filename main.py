@@ -1,12 +1,15 @@
-import os
 import uvicorn
 from config.config import Server_Port
 from fastapi import FastAPI, Request
-from routers import question_and_answer, translation, question_and_answer_filter
+from app.routers import question_and_answer, translation, question_and_answer_filter
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from starlette.staticfiles import StaticFiles
 
 app = FastAPI()
+
+# 设置静态文件路径，指向 static 文件夹
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # 设置模板目录
 templates = Jinja2Templates(directory="templates")

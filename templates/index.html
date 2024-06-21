@@ -4,22 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>多模态标注工具</title>
-    <link rel="stylesheet" src="../../static/element-ui.css">
+    <link rel="stylesheet" href="{{ url_for('static', path='css/element-ui.css') }}">
 </head>
     <body>
-        <div id="app">
-            <el-container>
-                <el-header>
-                    <h1>{{ name }}</h1>
-                </el-header>
-                <el-main>
-                    <el-input v-model="input" placeholder="Enter something..."></el-input>
-                    <el-button type="primary" @click="submit">Submit</el-button>
-                    <p>{{ message }}</p>
-                </el-main>
-            </el-container>
-        </div>
-        <!-- <div>
+        <div>
             <div style="text-align: center; margin-bottom: 20px;">
                 <h1>中国铁塔内部多模态标注工具</h1>
             </div>
@@ -73,8 +61,6 @@
                         onmouseout="this.style.backgroundColor='#ffc56e';"
                         onclick="window.location.href='http://127.0.0.1:{{server_port}}/translate'">中英文对照标注</button>
             </div>
-        </div> -->
-        <script src="../../static/vue.js"></script>
-        <script src="../../static/element-ui.js"></script>
+        </div>
     </body>
 </html>

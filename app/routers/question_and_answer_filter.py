@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, Query
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, JSONResponse
 from config.config import QA_FILTER_TITLE
-from views import question_and_answer_filter
+from app.services import question_and_answer_filter
 
 router = APIRouter()
 

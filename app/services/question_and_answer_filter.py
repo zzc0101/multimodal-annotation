@@ -1,4 +1,4 @@
-from utils import file_util
+from app.utils import file_util
 from config import config
 
 # 计算出问答筛选的所有文件
