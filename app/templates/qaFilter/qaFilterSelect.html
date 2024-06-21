@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{data}}</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .pagination {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .pagination button {
+            padding: 8px 12px;
+            margin: 0 5px;
+            border: 1px solid #ddd;
+            background-color: #f4f4f4;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{data}}</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>数据集名称</th>
+                <th>数据总量</th>
+                <th>正确数量</th>
+                <th>错误数量</th>
+                <th>剩余数量</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody id="table-body">
+            <!-- 动态内容将被插入到这里 -->
+        </tbody>
+    </table>
+    <div class="pagination">
+        <button onclick="previousPage()">上一页</button>
+        <span id="page-info"> 1 </span>
+        <button onclick="nextPage()">下一页</button>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        let pageCount = 1;
+        const pageSize = 10;
+
+        async function fetchData(page, size) {
+            const response = await fetch(`/qaFilter/data?page=${page}&size=${size}`);
+            const result = await response.json();
+            return result;
+        }
+
+        function updateTable(data) {
+            const tableBody = document.getElementById('table-body');
+            tableBody.innerHTML = '';
+            data.forEach(item => {
+                const encodedName = encodeURIComponent(item.name);
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.count}</td>
+                    <td>${item.correct}</td>
+                    <td>${item.error}</td>
+                    <td>${item.count - item.correct - item.error}</td>
+                    <td class="action-buttons">
+                        <button onclick="mark('${encodedName}')">标注</button>
+                        <button onclick="sync('${encodedName}')">同步</button>
+                    </td>`;
+                tableBody.appendChild(row);
+            });
+        }
+
+        async function loadPage(page) {
+            const result = await fetchData(page, pageSize);
+            pageCount = result.pageCount
+            updateTable(result.data);
+            document.getElementById('page-info').innerText = ` ${page} `;
+        }
+
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                loadPage(currentPage);
+            }
+        }
+
+        function nextPage() {
+            if (currentPage < pageCount) {
+                currentPage++;
+                loadPage(currentPage);
+            }
+        }
+
+        // 标注按钮点击事件
+        async function mark(encodeName) {
+            // 解析传入的参数
+            const name = decodeURIComponent(encodeName);
+            const response = await fetch(`/qaFilter/data/${encodeName}`);
+            const result = await response.json();
+            console.log(result.message)
+        }
+
+        // 同步按钮点击事件
+        function sync(encodeName) {
+            // 解析传入的参数
+            const name = decodeURIComponent(encodeName);
+            console.log(`同步按钮点击，数据集ID: ${name}`);
+        }
+
+        // 初始加载第一页
+        loadPage(currentPage);
+    </script>
+</body>
+</html>
