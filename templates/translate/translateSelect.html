@@ -3,98 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{data}}</title>
+    <title>{{ data }}</title>
+    <!-- 引用在线的 Element-UI 和 Vue -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
     <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-        }
-        th {
-            background-color: #f4f4f4;
-        }
-        .pagination {
+        .header-title {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
             margin: 20px 0;
+        }
+        .header-title h1 {
+            display: inline-block;
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            font-size: 36px;
+            font-weight: bold;
+        }
+        .home-button {
+            position: absolute;
+            left: 10px;
+            margin-left: 10px;
+        }
+        .el-table th {
+            font-weight: bold;
+        }
+        .el-table td {
             text-align: center;
         }
-        .pagination button {
-            padding: 8px 12px;
-            margin: 0 5px;
-            border: 1px solid #ddd;
-            background-color: #f4f4f4;
-            cursor: pointer;
+        .pagination-container {
+            text-align: center;
+            margin: 20px 0;
         }
     </style>
 </head>
 <body>
-    <h1>{{data}}</h1>
-    <table>
-        <thead>
-            <tr>
-                <th>文件夹名称</th>
-                <th>数据总量</th>
-                <th>正确数量</th>
-                <th>错误数量</th>
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody id="table-body">
-            <!-- 动态内容将被插入到这里 -->
-        </tbody>
-    </table>
-    <div class="pagination">
-        <button onclick="previousPage()">上一页</button>
-        <span id="page-info"> 1 </span>
-        <button onclick="nextPage()">下一页</button>
+    <div id="app">
+        <el-container>
+            <el-header class="header-title">
+                <el-button class="home-button" @click="goHome" size="mini">返回首页</el-button>
+                <h1>{{ data }}</h1>
+            </el-header>
+            <el-main>
+                <el-table :data="tableData" style="width: 100%">
+                    <el-table-column prop="name" label="数据集名称" align="center"></el-table-column>
+                    <el-table-column prop="count" label="数据总量" align="center"></el-table-column>
+                    <el-table-column prop="correct" label="正确数量" align="center"></el-table-column>
+                    <el-table-column prop="error" label="错误数量" align="center"></el-table-column>
+                    <el-table-column label="剩余数量" align="center">
+                        <template slot-scope="scope">
+                            {{ '{{' }} scope.row.count - scope.row.correct - scope.row.error {{ '}}' }}
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="操作" align="center">
+                        <template slot-scope="scope">
+                            <el-button @click="mark(scope.row.name)" size="mini">标注</el-button>
+                            <el-button @click="sync(scope.row.name)" size="mini">同步</el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+                <div class="pagination-container">
+                    <el-pagination
+                        @current-change="loadPage"
+                        :current-page="currentPage"
+                        :page-size="pageSize"
+                        layout="prev, pager, next, jumper, ->, total"
+                        :total="totalItems">
+                        <template slot="prev">
+                            <el-button @click="loadPage(1)" size="mini">首页</el-button>
+                        </template>
+                        <template slot="next">
+                            <el-button @click="loadPage(lastPage)" size="mini">末页</el-button>
+                        </template>
+                    </el-pagination>
+                </div>
+            </el-main>
+        </el-container>
     </div>
 
     <script>
-        let currentPage = 1;
-        let pageCount = 1;
-        const pageSize = 10;
-
-        async function fetchData(page, size) {
-            const response = await fetch(`/qaFilter/data?page=${page}&size=${size}`);
-            const result = await response.json();
-            return result;
-        }
-
-        function updateTable(data) {
-            const tableBody = document.getElementById('table-body');
-            tableBody.innerHTML = '';
-            data.forEach(item => {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td>${item.id}</td><td>${item.name}</td><td>${item.age}</td><td>${item.age}</td><td>${item.age}</td>`;
-                tableBody.appendChild(row);
-            });
-        }
-
-        async function loadPage(page) {
-            const result = await fetchData(page, pageSize);
-            pageCount = result.pageCount
-            updateTable(result.data);
-            document.getElementById('page-info').innerText = ` ${page} `;
-        }
-
-        function previousPage() {
-            if (currentPage > 1) {
-                currentPage--;
-                loadPage(currentPage);
+        new Vue({
+            el: '#app',
+            data() {
+                return {
+                    tableData: [],
+                    currentPage: 1,
+                    pageSize: 10,
+                    totalItems: 0
+                }
+            },
+            computed: {
+                lastPage() {
+                    return Math.ceil(this.totalItems / this.pageSize);
+                }
+            },
+            methods: {
+                async fetchData(page, size) {
+                    const response = await fetch(`/qaFilter/data?page=${page}&size=${size}`);
+                    const result = await response.json();
+                    this.tableData = result.data;
+                    this.totalItems = result.totalItems;
+                },
+                loadPage(page) {
+                    this.currentPage = page;
+                    this.fetchData(page, this.pageSize);
+                },
+                async mark(name) {
+                    const encodedName = encodeURIComponent(name);
+                    const response = await fetch(`/qaFilter/mark/${encodedName}`, {
+                        method: 'GET'
+                    });
+                    const result = await response.json();
+                    this.$message({
+                        message: result.message,
+                        type: 'success'
+                    });
+                },
+                async sync(name) {
+                    const response = await fetch(`/qaFilter/sync`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ name: name })
+                    });
+                    const result = await response.json();
+                    this.$message({
+                        message: result.message,
+                        type: 'success'
+                    });
+                },
+                goHome() {
+                    window.location.href = "/";
+                }
+            },
+            mounted() {
+                this.loadPage(this.currentPage);
             }
-        }
-
-        function nextPage() {
-            if (currentPage < pageCount) {
-                currentPage++;
-                loadPage(currentPage);
-            }
-        }
-
-        // 初始加载第一页
-        loadPage(currentPage);
+        });
     </script>
 </body>
 </html>

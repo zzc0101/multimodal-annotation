@@ -233,8 +233,26 @@
                 );
             },
             methods: {
-                navigateTo(path) {
-                    window.location.href = `http://127.0.0.1:{{server_port}}/${path}`;
+                async navigateTo(path) {
+                    try {
+                        const response = await fetch(`/${path}`, {
+                            method: 'GET'
+                        });
+                        if (response.ok) {
+                            // 处理成功的响应，例如跳转或显示消息
+                            window.location.href = `/${path}`;
+                        } else {
+                            this.$message({
+                                message: result.message || '请求失败',
+                                type: 'error'
+                            });
+                        }
+                    } catch (error) {
+                        this.$message({
+                            message: '请求失败',
+                            type: 'error'
+                        });
+                    }
                 },
                 typeText(text, element) {
                     let index = 0;

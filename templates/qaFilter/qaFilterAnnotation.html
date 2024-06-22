@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>标注界面</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.10.5/viewer.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.10.5/viewer.js"></script>
+    <style scoped>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .header-title {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            margin-bottom: 20px;
+            background-color: #f5f5f5;
+            padding: 10px 0;
+            border-bottom: 1px solid #dcdcdc;
+        }
+        .home-button,
+        .back-button {
+            position: absolute;
+            left: 10px;
+            margin-left: 10px;
+        }
+        .back-button {
+            left: 100px;
+        }
+        .content-container {
+            width: 80%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 auto;
+        }
+        .image-container {
+            width: 60%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        .image-container img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        .navigation-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .jump-to-input {
+            width: 50px;
+            margin: 0 10px;
+        }
+        .qa-container {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .qa-item {
+            width: 45%;
+        }
+        .qa-item p {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .qa-item textarea {
+            width: 100%;
+            height: 200px;
+            resize: none;
+            border: 1px solid #dcdcdc;
+            border-radius: 4px;
+            padding: 10px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        .mark-buttons {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            max-width: 400px;
+        }
+        .el-button {
+            min-width: 80px;
+        }
+        /* 隐藏全屏预览的关闭按钮 */
+        .el-image-viewer__btn {
+            display: none !important;
+        }
+        /* 如果需要，也可以隐藏缩放按钮等其他控件，根据实际类名进行调整 */
+        .el-image-viewer__actions { 
+            display: none !important; 
+        }
+
+        /* 可能还需要隐藏底部的指示器 */
+        .el-image-viewer__indicators { 
+            display: none !important; 
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <el-container>
+            <el-header class="header-title">
+                <el-button class="home-button" @click="goHome" size="mini">返回首页</el-button>
+                <el-button class="back-button" @click="goBack" size="mini">返回上一级</el-button>
+                <h1>标注页面</h1>
+            </el-header>
+            <el-main>
+                <div class="content-container">
+                    <el-image 
+                        class="image-container"
+                        :src="currentImage"
+                        :preview-src-list="[this.currentImage]">
+                  </el-image>
+                    <div class="navigation-container">
+                        <span>{{'{{'}} currentIndex + 1 {{'}}'}}/{{'{{'}} totalImages {{'}}'}}</span>
+                        <el-input v-model="jumpToIndex" class="jump-to-input" size="mini"></el-input>
+                        <el-button @click="jumpTo" size="mini">跳转</el-button>
+                    </div>
+                    <div class="qa-container">
+                        <div class="qa-item">
+                            <p>问题</p>
+                            <textarea v-model="question" readonly></textarea>
+                        </div>
+                        <div class="qa-item">
+                            <p>回答</p>
+                            <textarea v-model="answer"></textarea>
+                        </div>
+                    </div>
+                    <div class="mark-buttons">
+                        <el-button @click="markError" :type="!isCorrect ? 'danger' : ''">错误</el-button>
+                        <el-button @click="markCorrect" :type="isCorrect ? 'primary' : ''">正确</el-button>
+                    </div>
+                    <div class="navigation-buttons">
+                        <el-button @click="prevPage">上一页</el-button>
+                        <el-button @click="save">保存</el-button>
+                        <el-button @click="nextPage">下一页</el-button>
+                    </div>
+                </div>
+            </el-main>
+        </el-container>
+    </div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data() {
+                return {
+                    images: [],
+                    currentIndex: 0,
+                    question: '',
+                    answer: '',
+                    jumpToIndex: 1,
+                    isCorrect: true,
+                    viewer: null,
+                }
+            },
+            computed: {
+                currentImage() {
+                    return this.images[this.currentIndex]?.url;
+                },
+                totalImages() {
+                    return this.images.length;
+                }
+            },
+            methods: {
+                async fetchData() {
+                    const response = await fetch(`/qaFilter/get_data`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ name: '1231231',  currentIndex: this.currentIndex})
+                    });
+                    const result = await response.json();
+                    console.log(result);
+                    this.images = result.images;
+                    this.currentIndex = result.currentIndex;
+                    this.updateQA();
+                },
+                updateQA() {
+                    if (this.images[this.currentIndex]) {
+                        this.question = this.images[this.currentIndex].question;
+                        this.answer = this.images[this.currentIndex].answer;
+                    }
+                },
+                jumpTo() {
+                    if (this.jumpToIndex > 0 && this.jumpToIndex <= this.totalImages) {
+                        this.currentIndex = this.jumpToIndex - 1;
+                        this.updateQA();
+                    } else {
+                        this.$message.error('无效的跳转索引');
+                    }
+                },
+                markCorrect() {
+                    console.log('markCorrect')
+                    this.isCorrect = true;
+                },
+                markError() {
+                    console.log('markError')
+                    this.isCorrect = false;
+                },
+                prevPage() {
+                    if (this.currentIndex > 0) {
+                        this.currentIndex--;
+                        this.jumpToIndex--;
+                        this.updateQA();
+                    } else {
+                        this.$message.warning('已经是第一页了');
+                    }
+                },
+                nextPage() {
+                    if (this.currentIndex < this.totalImages - 1) {
+                        this.currentIndex++;
+                        this.jumpToIndex++;
+                        this.updateQA();
+                    } else {
+                        this.$message.warning('已经是最后一页了');
+                    }
+                },
+                save() {
+                    this.$message.success('保存成功');
+                },
+                goHome() {
+                    window.location.href = "/";
+                },
+                goBack() {
+                    window.history.back();
+                },
+                handleShortcut(e) {
+                    if (e.ctrlKey) {
+                        switch (e.key.toLowerCase()) {
+                            case 'e':
+                                e.preventDefault();
+                                this.markError();
+                                break;
+                            case 'r':
+                                e.preventDefault(); // 防止触发浏览器的保存快捷键
+                                this.markCorrect();
+                                break;
+                            case 's':
+                                e.preventDefault(); // 防止触发浏览器的保存快捷键
+                                this.save();
+                                break;
+                            case 'd':
+                                e.preventDefault(); // 防止触发浏览器的保存快捷键
+                                this.prevPage();
+                                break;
+                            case 'f':
+                                e.preventDefault(); // 防止触发浏览器的保存快捷键
+                                this.nextPage();
+                                break;
+                        }
+                    }
+                },
+                showImageDialog() {
+                    this.imageDialogVisible = true;
+                }
+            },
+            mounted() {
+                this.fetchData();
+                window.addEventListener('keydown', this.handleShortcut);
+            },
+            beforeDestroy() {
+                window.removeEventListener('keydown', this.handleShortcut);
+                if (this.viewer) {
+                    this.viewer.destroy();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

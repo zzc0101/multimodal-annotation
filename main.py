@@ -1,7 +1,7 @@
 import uvicorn
 from config.config import Server_Port
 from fastapi import FastAPI, Request
-from app.routers import question_and_answer, translation, question_and_answer_filter
+from app.routers import question_and_answer, translation, question_and_answer_filter, img_file
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from starlette.staticfiles import StaticFiles
@@ -30,6 +30,7 @@ def redirect_url(request: Request):
 app.include_router(question_and_answer.router)
 app.include_router(translation.router)
 app.include_router(question_and_answer_filter.router)
+app.include_router(img_file.router)
 
 
 if "__main__" == __name__:
