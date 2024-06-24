@@ -1,3 +1,5 @@
+# 应用ip地址
+Server_Host = "127.0.0.1"
 # 应用启动端口
 Server_Port = 8080
 
@@ -24,16 +26,16 @@ CORRECT_FILE = "Correct"
 ERROR_FILE = "Error"
 
 # 图片文件根目录
-IMAGE_PATH = "~/test/img"
+IMAGE_PATH = "/Users/zzc/test/img"
 
 # 标注文件根目录
-QA_ANNOTATION_FILE_PATH = "D:/test/anno"
+QA_ANNOTATION_FILE_PATH = "/Users/zzc/test/anno"
 
 # 标注后保存文件的根目录
-QA_ANNOTATION_SAVE_PATH = "D:/test/result/anno"
+QA_ANNOTATION_SAVE_PATH = "/Users/zzc/test/result/anno"
 
 # 翻译标注文件根目录
-TRANSLATE_ANNOTATION_FILE_PATH = "D:/test/translate"
+TRANSLATE_ANNOTATION_FILE_PATH = "/Users/zzc/test/translate"
 
 # 翻译标注后保存文件的根目录
-TRANSLATE_ANNOTATION_SAVE_PATH = "D:/test/result/translate"
+TRANSLATE_ANNOTATION_SAVE_PATH = "/Users/zzc/test/result/translate"
