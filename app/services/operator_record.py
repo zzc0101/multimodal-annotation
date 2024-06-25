@@ -1,12 +1,15 @@
 import json
 import os
 
-def load_json(filepath):
-    if not os.path.exists(filepath):
-        with open(filepath, 'w', encoding='utf-8') as file:
+def load_json(file_path):
+    if not os.path.exists(file_path):
+        dir_path = os.path.dirname(file_path)
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+        with open(file_path, 'w', encoding='utf-8') as file:
             json.dump([], file, ensure_ascii=False, indent=4)  # 创建一个空的 JSON 数组
         return []
-    with open(filepath, 'r', encoding='utf-8') as file:
+    with open(file_path, 'r', encoding='utf-8') as file:
         return json.load(file)
 
 def save_json(filepath, data):
