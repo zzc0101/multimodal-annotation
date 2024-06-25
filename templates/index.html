@@ -71,17 +71,19 @@
             margin: 10px;
             font-size: 20px;
             padding: 20px;
-            background-color: #ffc56e;
+            background-color: #E47470;
             color: #fff;
             cursor: pointer;
-            border-radius: 8px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.1);
             transition: all 0.2s ease-in-out;
+            border: none;
         }
 
         .button-container .el-button:hover {
-            background-color: #fed09d;
+            background-color: #FF8C87;
             transform: translateY(-2px);
+            border: none;
             box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
         }
 
@@ -127,7 +129,14 @@
             el: '#app',
             mounted() {
                 this.typeText(
-                    "欢迎使用多模态标注工具。本工具旨在帮助用户进行各种类型的数据标注工作，包括问答筛选、问答标注和中英文对照标注。您可以通过点击上面的按钮进入相应的标注页面。\n如果您在使用过程中有任何问题或建议，请通过我们的联系页面与我们取得联系。我们致力于提供最佳的用户体验，并期待您的反馈。",
+                    "欢迎使用多模态标注工具。本工具旨在帮助用户进行各种类型的数据标注工作，包括问答筛选、问答标注和中英文对照标注。您可以通过点击上面的按钮进入相应的标注页面。\n\n" +
+                    "功能说明：\n" +
+                    "\t问答筛选：基于现有的开源大模型，对数据集推理结果进行正确性判定。\n" +
+                    "\t问答标注：基于人工筛选后的问答结果，对判定错误的数据集进行重新审核和修正。\n" +
+                    "\t中英文对照标注：基于现有的开源大模型，对英文数据集推理得到的中文数据进行审核，并结合图片进行纠正。\n\n" +
+                    "部分操作说明：\n" + 
+                    "\t标注：点击对应数据集的标注按钮，进入标注页面。\n" +
+                    "\t同步(开发中...)：点击同步按钮，将标注结果同步到数据集。\n",
                     document.getElementById('typed-text')
                 );
             },

@@ -39,3 +39,6 @@ TRANSLATE_ANNOTATION_FILE_PATH = "/Users/zzc/test/translate"
 
 # 翻译标注后保存文件的根目录
 TRANSLATE_ANNOTATION_SAVE_PATH = "/Users/zzc/test/result/translate"
+
+# 操作记录保存地址
+OPERATION_RECORD_PATH = "record/record.json"

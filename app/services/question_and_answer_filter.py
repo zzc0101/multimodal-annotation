@@ -1,6 +1,7 @@
-from app.utils import file_util, img_file, data_parse
+from app.utils import file_util, img_file, data_parse, anno_type
 from config import config
 import os, json
+from app.services import operator_record
 
 # 计算出问答筛选的所有文件
 def query_data():
@@ -25,6 +26,12 @@ def query_data():
         list.append(data)
     return list
 
+
+# 根据文件名称查询当前文件的对应下标
+def get_current_index(dataset: str, file_name: str):
+    source_root_folders = config.QA_ANNOTATION_FILE_PATH + '/' + dataset
+    return file_util.get_file_index(source_root_folders, file_name)
+    
 
 # 页面数据响应
 def get_anno_data(dataset: str, current_index: int):
@@ -105,3 +112,18 @@ def save_anno_data(data_json):
         # 将修改后的数据保存回文件
         with open(error_path + '/' + data_json['fileName']+config.ANNOTATION_SUF, 'w', encoding='utf-8') as file:
             json.dump(content, file, ensure_ascii=False, indent=4)
+    
+    count = file_util.count_json_files(source_root_folders, config.ANNOTATION_SUF)
+    correctCount = file_util.count_json_files(correct_path, config.ANNOTATION_SUF)
+    errorCount = file_util.count_json_files(error_path, config.ANNOTATION_SUF)
+    # 保存操作记录
+    load_data = operator_record.load_json(config.OPERATION_RECORD_PATH)
+    if load_data is None:
+        operator_record.add_entry(load_data, str(data_json['datasetName']), anno_type.get_attribute('filter'), preview=data_json['fileName']+config.ANNOTATION_SUF, count=count, correctCount=correctCount, errorCount=errorCount)
+    else:
+        query_data = operator_record.query_entry(load_data, str(data_json['datasetName']), anno_type.get_attribute('filter'))
+        if query_data is None:
+            operator_record.add_entry(load_data, str(data_json['datasetName']), anno_type.get_attribute('filter'), preview=data_json['fileName']+config.ANNOTATION_SUF, count=count, correctCount=correctCount, errorCount=errorCount)
+        else:
+            operator_record.update_entry(load_data, str(data_json['datasetName']), anno_type.get_attribute('filter'), preview=data_json['fileName']+config.ANNOTATION_SUF, count=count, correctCount=correctCount, errorCount=errorCount)
+    operator_record.save_json(config.OPERATION_RECORD_PATH, load_data)

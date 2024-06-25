@@ -136,7 +136,7 @@
                     }
                 },
                 async sync(name) {
-                    const response = await fetch(`/qaFilter/sync`, {
+                    /* const response = await fetch(`/qaFilter/sync`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -147,7 +147,8 @@
                     this.$message({
                         message: result.message,
                         type: 'success'
-                    });
+                    }); */
+                    this.$message.warning('还在路上...')
                 },
                 goHome() {
                     window.location.href = "/";
