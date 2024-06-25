@@ -39,7 +39,7 @@
         }
         .save-status {
             position: absolute;
-            bottom: -60px;
+            bottom: -55px;
             right: 10px; /* 水平居中 */
             margin-right: 10px;
         }
@@ -61,8 +61,8 @@
             margin: 0 auto;
         }
         .image-container {
-            width: 60%;
-            height: 400px; /* Set a fixed height to prevent layout shifting */
+            width: 960px;
+            height: 540px; /* Set a fixed height to prevent layout shifting */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -135,7 +135,7 @@
             display: flex;
             justify-content: space-around;
             width: 100%;
-            max-width: 400px;
+            max-width: 600px;
         }
         .el-button {
             min-width: 80px;
@@ -201,6 +201,7 @@
                         <el-button @click="prevPage">上一页(Ctrl+A)</el-button>
                         <el-button @click="save">保存(Ctrl+S)</el-button>
                         <el-button @click="nextPage">下一页(Ctrl+D)</el-button>
+                        <el-button @click="saveNext">保存继续(Ctrl+F)</el-button>
                     </div>
                 </div>
             </el-main>
@@ -228,7 +229,7 @@
                     dataset: '',
                     fileName: '',
                     isSaving: false,
-                    saveStatus: '已保存'  // 初始状态为“已保存”
+                    saveStatus: '已保存'
                 }
             },
             created() {
@@ -265,11 +266,9 @@
                     }
                 },
                 markCorrect() {
-                    console.log('markCorrect');
                     this.isCorrect = true;
                 },
                 markError() {
-                    console.log('markError');
                     this.isCorrect = false;
                 },
                 prevPage() {
@@ -277,8 +276,6 @@
                         this.currentIndex--;
                         this.jumpToIndex--;
                         this.fetchData(this.currentIndex);
-                    } else {
-                        this.$message.warning('已经是第一页了');
                     }
                 },
                 nextPage() {
@@ -286,8 +283,12 @@
                         this.currentIndex++;
                         this.jumpToIndex++;
                         this.fetchData(this.currentIndex);
-                    } else {
-                        this.$message.warning('已经是最后一页了');
+                    }
+                },
+                async saveNext() {
+                    await this.save()
+                    if (this.isSaving) {
+                        this.nextPage();
                     }
                 },
                 async save() {
@@ -356,12 +357,16 @@
                             case 'w':
                                 e.preventDefault();
                                 break;
+                            case 'f':
+                                e.preventDefault();
+                                this.saveNext();
+                                break;
                         }
                     }
                 }
             },
             mounted() {
-                this.fetchData(0);
+                this.fetchData(this.currentIndex);
                 window.addEventListener('keydown', this.handleShortcut);
             },
             beforeDestroy() {
