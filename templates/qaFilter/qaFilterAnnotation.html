@@ -366,6 +366,8 @@
                 }
             },
             mounted() {
+                this.currentIndex = window.initialData.currentIndex
+                this.jumpToIndex = this.currentIndex + 1
                 this.fetchData(this.currentIndex);
                 window.addEventListener('keydown', this.handleShortcut);
             },

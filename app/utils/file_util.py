@@ -51,7 +51,19 @@ def file_exists_in_directory(directory, filename):
             return True
     return False
 
+# 获取指定目录中特定文件名的文件的索引
+def get_file_index(directory, target_file):
+    # 获取文件夹中的所有文件并排序
+    files = sorted(os.listdir(directory))
+    
+    # 查找目标文件的下标
+    if target_file in files:
+        index = files.index(target_file)
+        return index
+    else:
+        return 0
 
+# 复制指定文件
 def copy_specific_file(source_directory, destination_directory, file_name):
     # 构建源文件的完整路径
     source_file = os.path.join(source_directory, file_name)
