@@ -67,8 +67,6 @@
             margin-top: 10px;
             margin-bottom: 10px;
             padding: 10px;
-            border: 2px solid #f0c9cf;
-            border-radius: 10px;
         }
         .image-container {
             flex: 1;
@@ -132,7 +130,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
         }
         .jump-to-input {
             width: 50px;
@@ -258,7 +256,6 @@
                         body: JSON.stringify({ name: this.dataset,  currentIndex: index})
                     });
                     const result = await response.json();
-                    console.log(result);
                     this.imageLoaded = false; // Reset imageLoaded before loading a new image
                     this.image = result.data.image;
                     this.total = result.total;
@@ -272,6 +269,9 @@
                 },
                 jumpTo() {
                     if (this.jumpToIndex > 0 && this.jumpToIndex <= this.total) {
+                        if (this.jumpToIndex - 1 == this.currentIndex) {
+                            return;
+                        }
                         this.currentIndex = this.jumpToIndex - 1;
                         this.fetchData(this.currentIndex);
                     } else {
