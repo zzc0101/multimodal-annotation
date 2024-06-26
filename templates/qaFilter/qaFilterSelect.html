@@ -156,6 +156,9 @@
             },
             mounted() {
                 this.loadPage(this.currentPage);
+                setInterval(() => {
+                    this.loadPage(this.currentPage);
+                }, 3000);
             }
         });
     </script>
