@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>标注界面</title>
+    <title>{{data.title}}</title>
     <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.10.5/viewer.css">
     <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
@@ -18,7 +18,7 @@
             justify-content: center;
             align-items: center;
             position: relative;
-            margin-bottom: 20px;
+            margin-bottom: 10px; /* 减小下边距 */
             background-color: #f5f5f5;
             padding: 10px 0;
             border-bottom: 1px solid #dcdcdc;
@@ -37,6 +37,22 @@
         .back-button {
             left: 100px;
         }
+        .save-status {
+            position: absolute;
+            bottom: -55px;
+            right: 10px; /* 水平居中 */
+            margin-right: 10px;
+        }
+        .save-status span.saved {
+            color: #4CAF50; /* 绿色 */
+            border: 1px solid #4CAF50;
+            border-radius: 4px;
+        }
+        .save-status span.unsaved {
+            color: #FF5722; /* 红色 */
+            border: 1px solid #FF5722;
+            border-radius: 4px;
+        }
         .content-container {
             width: 80%;
             display: flex;
@@ -45,8 +61,8 @@
             margin: 0 auto;
         }
         .image-container {
-            width: 60%;
-            height: 100%;
+            width: 960px;
+            height: 540px; /* Set a fixed height to prevent layout shifting */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -119,7 +135,7 @@
             display: flex;
             justify-content: space-around;
             width: 100%;
-            max-width: 400px;
+            max-width: 600px;
         }
         .el-button {
             min-width: 80px;
@@ -137,6 +153,7 @@
         .el-image-viewer__indicators { 
             display: none !important; 
         }
+
     </style>
 </head>
 <body>
@@ -145,7 +162,9 @@
             <el-header class="header-title">
                 <el-button class="home-button" @click="goHome" size="mini">返回首页</el-button>
                 <el-button class="back-button" @click="goBack" size="mini">返回上一级</el-button>
-                <h1>{{data.title}}页面</h1>
+                <!-- <h1>{{data.title}}页面</h1> -->
+                <h1 class="save-status">保存状态：<span :class="isSaving ? 'saved' : 'unsaved'">{{'{{'}} saveStatus {{'}}'}}</span></h1>
+                <p class="file-name">{{'{{'}} fileName {{'}}'}}</p>
                 <h1 class="dataset-title">{{data.dataset}}</h1>
             </el-header>
             <el-main>
@@ -160,7 +179,7 @@
                         </el-image>
                     </div>
                     <div class="navigation-container">
-                        <span> {{ currentIndex + 1 }} / {{ total }} </span>
+                        <span> {{'{{'}} currentIndex + 1 {{'}}'}} / {{'{{'}} total {{'}}'}} </span>
                         <el-input v-model="jumpToIndex" class="jump-to-input" size="mini"></el-input>
                         <el-button @click="jumpTo" size="mini">跳转</el-button>
                     </div>
@@ -175,13 +194,14 @@
                         </div>
                     </div>
                     <div class="mark-buttons">
-                        <el-button @click="markError" :type="!isCorrect ? 'danger' : ''">错误</el-button>
-                        <el-button @click="markCorrect" :type="isCorrect ? 'primary' : ''">正确</el-button>
+                        <el-button @click="markError" :type="!isCorrect ? 'danger' : ''">错误(Ctrl+E)</el-button>
+                        <el-button @click="markCorrect" :type="isCorrect ? 'primary' : ''">正确(Ctrl+R)</el-button>
                     </div>
                     <div class="navigation-buttons">
-                        <el-button @click="prevPage">上一页</el-button>
-                        <el-button @click="save">保存</el-button>
-                        <el-button @click="nextPage">下一页</el-button>
+                        <el-button @click="prevPage">上一页(Ctrl+A)</el-button>
+                        <el-button @click="save">保存(Ctrl+S)</el-button>
+                        <el-button @click="nextPage">下一页(Ctrl+D)</el-button>
+                        <el-button @click="saveNext">保存继续(Ctrl+F)</el-button>
                     </div>
                 </div>
             </el-main>
@@ -206,7 +226,10 @@
                     jumpToIndex: 1,
                     isCorrect: true,
                     viewer: null,
-                    dataset: ''
+                    dataset: '',
+                    fileName: '',
+                    isSaving: false,
+                    saveStatus: '已保存'
                 }
             },
             created() {
@@ -227,8 +250,12 @@
                     this.image = result.data.image;
                     this.total = result.total;
                     this.currentIndex = result.currentIndex;
-                    this.question = result.data.question_value
-                    this.answer = result.data.answer_value
+                    this.question = result.data.questionValue;
+                    this.answer = result.data.answerValue;
+                    this.fileName = result.data.fileName;
+                    this.isCorrect = result.data.correctFlag;
+                    this.isSaving = result.data.saveFlag;
+                    this.saveStatus = this.isSaving ? '已保存' : '未保存';
                 },
                 jumpTo() {
                     if (this.jumpToIndex > 0 && this.jumpToIndex <= this.total) {
@@ -239,11 +266,9 @@
                     }
                 },
                 markCorrect() {
-                    console.log('markCorrect')
                     this.isCorrect = true;
                 },
                 markError() {
-                    console.log('markError')
                     this.isCorrect = false;
                 },
                 prevPage() {
@@ -251,8 +276,6 @@
                         this.currentIndex--;
                         this.jumpToIndex--;
                         this.fetchData(this.currentIndex);
-                    } else {
-                        this.$message.warning('已经是第一页了');
                     }
                 },
                 nextPage() {
@@ -260,12 +283,47 @@
                         this.currentIndex++;
                         this.jumpToIndex++;
                         this.fetchData(this.currentIndex);
-                    } else {
-                        this.$message.warning('已经是最后一页了');
                     }
                 },
-                save() {
-                    this.$message.success('保存成功');
+                async saveNext() {
+                    await this.save()
+                    if (this.isSaving) {
+                        this.nextPage();
+                    }
+                },
+                async save() {
+                    this.isSaving = false;
+                    this.saveStatus = '未保存';
+                    const params = {
+                        datasetName: this.dataset,
+                        fileName: this.fileName,
+                        currentIndex: this.currentIndex,
+                        correctFlag: this.isCorrect,
+                        questionValue: this.question,
+                        answerValue: this.answer,
+                    };
+                    const response = await fetch(`/qaFilter/save_data`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(params)
+                    });
+                    if (response.status == 200) {
+                        this.isSaving = true;
+                    } else {
+                        this.isSaving = false;
+                    }
+                    this.saveStatus = this.isSaving ? '已保存' : '未保存';
+                },
+                extractFilenameWithoutExtension(url) {
+                    const match = url.match(/\/([^\/?#]+)(?:[\/?#]|$)/i);
+                    if (match && match[1]) {
+                        const filenameWithExtension = match[1];
+                        const filenameWithoutExtension = filenameWithExtension.replace(/\.[^/.]+$/, "");
+                        return filenameWithoutExtension;
+                    }
+                    return null;
                 },
                 goHome() {
                     window.location.href = "/";
@@ -281,30 +339,36 @@
                                 this.markError();
                                 break;
                             case 'r':
-                                e.preventDefault(); // 防止触发浏览器的刷新快捷键
+                                e.preventDefault();
                                 this.markCorrect();
                                 break;
                             case 's':
-                                e.preventDefault(); // 防止触发浏览器的页面保存快捷键
+                                e.preventDefault();
                                 this.save();
                                 break;
-                            case 'd':
-                                e.preventDefault(); // 防止触发浏览器的快捷键
+                            case 'a':
+                                e.preventDefault();
                                 this.prevPage();
                                 break;
-                            case 'f':
-                                e.preventDefault(); // 防止触发浏览器的快捷键
+                            case 'd':
+                                e.preventDefault();
                                 this.nextPage();
                                 break;
                             case 'w':
-                                e.preventDefault(); // 防止触发浏览器关闭窗口
+                                e.preventDefault();
+                                break;
+                            case 'f':
+                                e.preventDefault();
+                                this.saveNext();
                                 break;
                         }
                     }
                 }
             },
             mounted() {
-                this.fetchData(0);
+                this.currentIndex = window.initialData.currentIndex
+                this.jumpToIndex = this.currentIndex + 1
+                this.fetchData(this.currentIndex);
                 window.addEventListener('keydown', this.handleShortcut);
             },
             beforeDestroy() {
