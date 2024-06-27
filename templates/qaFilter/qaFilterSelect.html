@@ -94,7 +94,8 @@
                     tableData: [],
                     currentPage: 1,
                     pageSize: 10,
-                    totalItems: 0
+                    totalItems: 0,
+                    isInitialized: false
                 }
             },
             computed: {
@@ -104,14 +105,27 @@
             },
             methods: {
                 async fetchData(page, size) {
-                    const response = await fetch(`/qaFilter/data?page=${page}&size=${size}`);
-                    const result = await response.json();
-                    this.tableData = result.data;
-                    this.totalItems = result.totalItems;
+                    try {
+                        const response = await fetch(`/qaFilter/data?page=${page}&size=${size}`);
+                        if (response.status != 200) {
+                            throw new Error('网络响应异常！');
+                        }
+                        const result = await response.json();
+                        this.tableData = result.data || [];
+                        this.totalItems = result.totalItems || 0;
+                    } catch (error) {
+                        console.error(error);
+                        this.tableData = [];
+                        this.totalItems = 0;
+                    }
                 },
                 loadPage(page) {
+                    if (page < 1 || (page > this.lastPage && this.isInitialized)) {
+                        return;
+                    }
                     this.currentPage = page;
                     this.fetchData(page, this.pageSize);
+                    this.isInitialized = true;
                 },
                 async mark(name) {
                     const encodedName = encodeURIComponent(name);
