@@ -62,7 +62,7 @@
                     </el-table-column>
                     <el-table-column label="操作" align="center">
                         <template slot-scope="scope">
-                            <el-button @click="mark(scope.row.name)" size="mini">标注</el-button>
+                            <el-button @click="mark(scope.row.name)" size="mini">筛选</el-button>
                             <el-button @click="sync(scope.row.name)" size="mini">同步</el-button>
                         </template>
                     </el-table-column>
@@ -136,19 +136,19 @@
                     }
                 },
                 async sync(name) {
-                    /* const response = await fetch(`/qaFilter/sync`, {
+                    const response = await fetch(`/qaFilter/sync`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ name: name })
+                        body: JSON.stringify({ datasetName: name,  })
                     });
                     const result = await response.json();
-                    this.$message({
-                        message: result.message,
-                        type: 'success'
-                    }); */
-                    this.$message.warning('还在路上...')
+                    if(result.code == 200) {
+                        this.$message.success(result.message)
+                    } else {
+                        this.$message.error(result.message)
+                    }
                 },
                 goHome() {
                     window.location.href = "/";

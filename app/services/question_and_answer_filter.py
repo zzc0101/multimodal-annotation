@@ -1,6 +1,6 @@
 from app.utils import file_util, img_file, data_parse, anno_type
 from config import config
-import os, json
+import os, json, shutil
 from app.services import operator_record
 
 # 计算出问答筛选的所有文件
@@ -32,6 +32,20 @@ def get_current_index(dataset: str, file_name: str):
     source_root_folders = config.QA_ANNOTATION_FILE_PATH + '/' + dataset
     return file_util.get_file_index(source_root_folders, file_name)
     
+
+# 同步标注数据
+def sync_data(datasetName: str):
+    source_error_folder = config.QA_ANNOTATION_SAVE_PATH + '/' + datasetName + '/' + config.ERROR_FILE
+    if not os.path.exists(source_error_folder):
+        return False
+    source_correct_folder = config.QA_ANNOTATION_SAVE_PATH + '/' + datasetName + '/' + config.CORRECT_FILE
+    if not os.path.exists(source_correct_folder):
+        return False
+    target_merge = config.QA_MERGE_FILE_PATH + '/' + datasetName
+    target_anno = config.QA_ANNOTATION_ERROR_FILE_PATH + '/' + datasetName
+    file_util.copy_files(source_folder=source_correct_folder, destination_folder=target_merge)
+    file_util.copy_files(source_folder=source_error_folder, destination_folder=target_anno)
+    return True
 
 # 页面数据响应
 def get_anno_data(dataset: str, current_index: int):

@@ -16,6 +16,8 @@ class DatasetMarkRequest(BaseModel):
     name: str
     currentIndex: int
 
+class DatasetSynRequest(BaseModel):
+    datasetName: str
 
 class DatasetSaveRequest(BaseModel):
     datasetName: str
@@ -62,9 +64,13 @@ async def mark_data(request: Request, anno_dataset: str):
 
 # 问答筛选同步接口
 @router.post("/qaFilter/sync")
-async def sync_data(request: DatasetMarkRequest):
-    dataset_name = request.name
-    return {"message": f"Dataset '{dataset_name}' syn successfully"}
+async def sync_data(request: DatasetSynRequest):
+    data = {}
+    dataset_name = request.datasetName
+    flag = question_and_answer_filter.sync_data(datasetName=dataset_name)
+    data['message'] = '同步成功！' if flag else '同步失败！'
+    data['code'] = 200 if flag else 500
+    return JSONResponse(content=data)
 
 
 # 问答筛选获取数据

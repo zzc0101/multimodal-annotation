@@ -81,3 +81,18 @@ def copy_specific_file(source_directory, destination_directory, file_name):
 
     # 复制文件
     shutil.copy2(source_file, destination_file)
+
+# 复制文件夹内容
+def copy_files(source_folder, destination_folder):
+    # 确保目标文件夹存在，如果不存在则创建
+    if not os.path.exists(destination_folder):
+        os.makedirs(destination_folder)
+    
+    # 遍历源文件夹中的所有文件
+    for filename in os.listdir(source_folder):
+        # 构建源文件和目标文件的完整路径
+        source_file = os.path.join(source_folder, filename)
+        destination_file = os.path.join(destination_folder, filename)
+        
+        # 复制文件
+        shutil.copy(source_file, destination_file)

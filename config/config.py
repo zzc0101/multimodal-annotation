@@ -29,13 +29,19 @@ ERROR_FILE = "Error"
 IMAGE_PATH = "/Users/zzc/test/img"
 
 # 标注文件根目录
-QA_ANNOTATION_FILE_PATH = "/Users/zzc/test/anno"
+QA_ANNOTATION_FILE_PATH = "/Users/zzc/test/source/anno"
+
+# 标注错误数据集
+QA_ANNOTATION_ERROR_FILE_PATH = "/Users/zzc/test/source/modification"
+
+# 合并数据集
+QA_MERGE_FILE_PATH = "/Users/zzc/test/result/merge"
 
 # 标注后保存文件的根目录
 QA_ANNOTATION_SAVE_PATH = "/Users/zzc/test/result/anno"
 
 # 翻译标注文件根目录
-TRANSLATE_ANNOTATION_FILE_PATH = "/Users/zzc/test/translate"
+TRANSLATE_ANNOTATION_FILE_PATH = "/Users/zzc/test/source/translate"
 
 # 翻译标注后保存文件的根目录
 TRANSLATE_ANNOTATION_SAVE_PATH = "/Users/zzc/test/result/translate"
