@@ -26,25 +26,25 @@ CORRECT_FILE = "Correct"
 ERROR_FILE = "Error"
 
 # 图片文件根目录
-IMAGE_PATH = "/Users/zzc/test/img"
+IMAGE_PATH = "./test/img"
 
 # 标注文件根目录
-QA_ANNOTATION_FILE_PATH = "/Users/zzc/test/source/anno"
+QA_ANNOTATION_FILE_PATH = "./test/source/anno"
 
 # 标注错误数据集
-QA_ANNOTATION_ERROR_FILE_PATH = "/Users/zzc/test/source/modification"
+QA_ANNOTATION_ERROR_FILE_PATH = "./test/source/modification"
 
 # 合并数据集
-QA_MERGE_FILE_PATH = "/Users/zzc/test/result/merge"
+QA_MERGE_FILE_PATH = "./test/result/merge"
 
 # 标注后保存文件的根目录
-QA_ANNOTATION_SAVE_PATH = "/Users/zzc/test/result/anno"
+QA_ANNOTATION_SAVE_PATH = "./test/result/anno"
 
 # 翻译标注文件根目录
-TRANSLATE_ANNOTATION_FILE_PATH = "/Users/zzc/test/source/translate"
+TRANSLATE_ANNOTATION_FILE_PATH = "./test/source/translate"
 
 # 翻译标注后保存文件的根目录
-TRANSLATE_ANNOTATION_SAVE_PATH = "/Users/zzc/test/result/translate"
+TRANSLATE_ANNOTATION_SAVE_PATH = "./test/result/translate"
 
 # 操作记录保存地址
 OPERATION_RECORD_PATH = "record/record.json"
