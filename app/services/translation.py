@@ -34,18 +34,18 @@ def get_current_index(dataset: str, file_name: str):
 
 
 # 同步标注数据
-def sync_data(datasetName: str):
-    source_error_folder = config.TRANSLATE_ANNOTATION_SAVE_PATH + '/' + datasetName + '/' + config.ERROR_FILE
-    if not os.path.exists(source_error_folder):
-        return False
-    source_correct_folder = config.TRANSLATE_ANNOTATION_SAVE_PATH + '/' + datasetName + '/' + config.CORRECT_FILE
-    if not os.path.exists(source_correct_folder):
-        return False
-    target_merge = config.QA_MERGE_FILE_PATH + '/' + datasetName
-    target_anno = config.QA_ANNOTATION_ERROR_FILE_PATH + '/' + datasetName
-    file_util.copy_files(source_folder=source_correct_folder, destination_folder=target_merge)
-    file_util.copy_files(source_folder=source_error_folder, destination_folder=target_anno)
-    return True
+# def sync_data(datasetName: str):
+#     source_error_folder = config.TRANSLATE_ANNOTATION_SAVE_PATH + '/' + datasetName + '/' + config.ERROR_FILE
+#     if not os.path.exists(source_error_folder):
+#         return False
+#     source_correct_folder = config.TRANSLATE_ANNOTATION_SAVE_PATH + '/' + datasetName + '/' + config.CORRECT_FILE
+#     if not os.path.exists(source_correct_folder):
+#         return False
+#     target_merge = config.QA_MERGE_FILE_PATH + '/' + datasetName
+#     target_anno = config.QA_ANNOTATION_ERROR_FILE_PATH + '/' + datasetName
+#     file_util.copy_files(source_folder=source_correct_folder, destination_folder=target_merge)
+#     file_util.copy_files(source_folder=source_error_folder, destination_folder=target_anno)
+#     return True
 
 
 # 页面数据响应

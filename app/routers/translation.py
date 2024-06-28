@@ -66,14 +66,14 @@ async def mark_data(request: Request, anno_dataset: str):
 
 
 # 问答筛选同步接口
-@router.post("/translate/sync")
-async def sync_data(request: DatasetSynRequest):
-    data = {}
-    dataset_name = request.datasetName
-    flag = translation.sync_data(datasetName=dataset_name)
-    data['message'] = '同步成功！' if flag else '同步失败！'
-    data['code'] = 200 if flag else 500
-    return JSONResponse(content=data)
+# @router.post("/translate/sync")
+# async def sync_data(request: DatasetSynRequest):
+#     data = {}
+#     dataset_name = request.datasetName
+#     flag = translation.sync_data(datasetName=dataset_name)
+#     data['message'] = '同步成功！' if flag else '同步失败！'
+#     data['code'] = 200 if flag else 500
+#     return JSONResponse(content=data)
 
 
 # 问答筛选获取数据
