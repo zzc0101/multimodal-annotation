@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ data }}</title>
-    <!-- 引用在线的 Element-UI 和 Vue -->
     <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
     <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
     <script src="https://unpkg.com/element-ui/lib/index.js"></script>
@@ -54,16 +53,15 @@
                 <el-table :data="tableData" style="width: 100%">
                     <el-table-column prop="name" label="数据集名称" align="center"></el-table-column>
                     <el-table-column prop="count" label="数据总量" align="center"></el-table-column>
-                    <el-table-column prop="correct" label="正确数量" align="center"></el-table-column>
-                    <el-table-column prop="error" label="错误数量" align="center"></el-table-column>
+                    <el-table-column prop="saveCount" label="已标注数量" align="center"></el-table-column>
                     <el-table-column label="剩余数量" align="center">
                         <template slot-scope="scope">
-                            {{ '{{' }} scope.row.count - scope.row.correct - scope.row.error {{ '}}' }}
+                            {{ '{{' }} scope.row.count - scope.row.saveCount {{ '}}' }}
                         </template>
                     </el-table-column>
                     <el-table-column label="操作" align="center">
                         <template slot-scope="scope">
-                            <el-button @click="mark(scope.row.name)" size="mini">标注</el-button>
+                            <el-button @click="mark(scope.row.name)" size="mini">筛选</el-button>
                             <el-button @click="sync(scope.row.name)" size="mini">同步</el-button>
                         </template>
                     </el-table-column>
@@ -95,7 +93,8 @@
                     tableData: [],
                     currentPage: 1,
                     pageSize: 10,
-                    totalItems: 0
+                    totalItems: 0,
+                    isInitialized: false
                 }
             },
             computed: {
@@ -105,39 +104,64 @@
             },
             methods: {
                 async fetchData(page, size) {
-                    const response = await fetch(`/qaFilter/data?page=${page}&size=${size}`);
-                    const result = await response.json();
-                    this.tableData = result.data;
-                    this.totalItems = result.totalItems;
+                    try {
+                        const response = await fetch(`/translate/data?page=${page}&size=${size}`);
+                        if (response.status != 200) {
+                            throw new Error('网络响应异常！');
+                        }
+                        const result = await response.json();
+                        this.tableData = result.data || [];
+                        this.totalItems = result.totalItems || 0;
+                    } catch (error) {
+                        console.error(error);
+                        this.tableData = [];
+                        this.totalItems = 0;
+                    }
                 },
                 loadPage(page) {
+                    if (page < 1 || (page > this.lastPage && this.isInitialized)) {
+                        return;
+                    }
                     this.currentPage = page;
                     this.fetchData(page, this.pageSize);
+                    this.isInitialized = true;
                 },
                 async mark(name) {
                     const encodedName = encodeURIComponent(name);
-                    const response = await fetch(`/qaFilter/mark/${encodedName}`, {
-                        method: 'GET'
-                    });
-                    const result = await response.json();
-                    this.$message({
-                        message: result.message,
-                        type: 'success'
-                    });
+                    try {
+                        const response = await fetch(`/translate/mark/${encodedName}`, {
+                            method: 'GET'
+                        });
+                        if (response.ok) {
+                            window.location.href = `/translate/mark/${encodedName}`;
+                        } else {
+                            const result = await response.json();
+                            this.$message({
+                                message: result.message || '请求失败',
+                                type: 'error'
+                            });
+                        }
+                    } catch (error) {
+                        this.$message({
+                            message: '请求失败',
+                            type: 'error'
+                        });
+                    }
                 },
                 async sync(name) {
-                    const response = await fetch(`/qaFilter/sync`, {
+                    const response = await fetch(`/translate/sync`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ name: name })
+                        body: JSON.stringify({ datasetName: name,  })
                     });
                     const result = await response.json();
-                    this.$message({
-                        message: result.message,
-                        type: 'success'
-                    });
+                    if(result.code == 200) {
+                        this.$message.success(result.message)
+                    } else {
+                        this.$message.error(result.message)
+                    }
                 },
                 goHome() {
                     window.location.href = "/";
@@ -145,6 +169,9 @@
             },
             mounted() {
                 this.loadPage(this.currentPage);
+                setInterval(() => {
+                    this.loadPage(this.currentPage);
+                }, 3000);
             }
         });
     </script>
