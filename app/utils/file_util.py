@@ -44,6 +44,8 @@ def get_sorted_json_content(folder_path, index):
 
 # 判断指定目录中是否存在特定文件名（不含后缀）的文件
 def file_exists_in_directory(directory, filename):
+    if not os.path.exists(directory):
+        return False
     # 遍历目录中的所有文件
     for file in os.listdir(directory):
         # 检查文件名是否匹配

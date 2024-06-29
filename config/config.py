@@ -31,8 +31,8 @@ IMAGE_PATH = "./test/img"
 # 标注文件根目录
 QA_ANNOTATION_FILE_PATH = "./test/source/anno"
 
-# 标注错误数据集
-QA_ANNOTATION_ERROR_FILE_PATH = "./test/source/modification"
+# 标注错误数据集保存路径
+QA_ANNOTATION_MODIFICATION_FILE_PATH = "./test/result/modification"
 
 # 合并数据集
 QA_MERGE_FILE_PATH = "./test/result/merge"

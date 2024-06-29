@@ -55,6 +55,11 @@
                     <el-table-column prop="count" label="数据总量" align="center"></el-table-column>
                     <el-table-column prop="correct" label="正确数量" align="center"></el-table-column>
                     <el-table-column prop="error" label="错误数量" align="center"></el-table-column>
+                    <el-table-column prop="isSync" label="同步状态" align="center">
+                        <template slot-scope="scope">
+                            {{ '{{' }} scope.row.isSync ? '已同步' : '未同步' {{ '}}' }}
+                        </template>
+                    </el-table-column>
                     <el-table-column label="剩余数量" align="center">
                         <template slot-scope="scope">
                             {{ '{{' }} scope.row.count - scope.row.correct - scope.row.error {{ '}}' }}

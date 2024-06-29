@@ -1,6 +1,6 @@
 from app.utils import file_util, img_file, data_parse, anno_type
 from config import config
-import os, json, shutil
+import os, json
 from app.services import operator_record
 
 # 计算出问答筛选的所有文件
@@ -12,6 +12,7 @@ def query_data():
     for name in folders:
         data = {}
         data['name'] = name
+        data['isSync'] = False
         save_path = result_folders + '/' + name
         correct_path = result_folders + '/' + name + '/' + config.CORRECT_FILE
         error_path = result_folders + '/' + name + '/' + config.ERROR_FILE
@@ -23,6 +24,12 @@ def query_data():
         data['count'] = file_util.count_json_files(root_folders + '/' + name, config.ANNOTATION_SUF)
         data['correct'] = file_util.count_json_files(correct_path, config.ANNOTATION_SUF)
         data['error'] = file_util.count_json_files(error_path, config.ANNOTATION_SUF)
+        # 查询操作记录
+        record_data = operator_record.load_json(config.OPERATION_RECORD_PATH)
+        load_data = operator_record.query_entry(record_data, name, anno_type.get_attribute('filter'))
+        if not load_data is None:
+            # 根据文件查询当前文件在列表中的下标
+            data['isSync'] = load_data['isSync']
         list.append(data)
     return list
 
@@ -35,17 +42,32 @@ def get_current_index(dataset: str, file_name: str):
 
 # 同步标注数据
 def sync_data(datasetName: str):
+    response_data = {
+        'code': 200,
+        'message': '同步成功！'
+    }
     source_error_folder = config.QA_ANNOTATION_SAVE_PATH + '/' + datasetName + '/' + config.ERROR_FILE
     if not os.path.exists(source_error_folder):
-        return False
+        response_data['code'] = 500
+        response_data['message'] = '同步失败，同步数据集不存在！'
+        return response_data
     source_correct_folder = config.QA_ANNOTATION_SAVE_PATH + '/' + datasetName + '/' + config.CORRECT_FILE
     if not os.path.exists(source_correct_folder):
-        return False
+        response_data['code'] = 500
+        response_data['message'] = '同步失败，同步数据集不存在！'
+        return response_data
+    load_data = operator_record.load_json(config.OPERATION_RECORD_PATH)
+    query_data = operator_record.query_entry(load_data, str(datasetName), anno_type.get_attribute('filter'))
+    if query_data is None:
+        response_data['code'] = 500
+        response_data['message'] = '同步失败，请先标注！'
+        return response_data
+    else:
+        operator_record.update_entry(load_data, datasetName, anno_type.get_attribute('filter'), isSync=True)
+    operator_record.save_json(config.OPERATION_RECORD_PATH, load_data)
     target_merge = config.QA_MERGE_FILE_PATH + '/' + datasetName
-    target_anno = config.QA_ANNOTATION_ERROR_FILE_PATH + '/' + datasetName
     file_util.copy_files(source_folder=source_correct_folder, destination_folder=target_merge)
-    file_util.copy_files(source_folder=source_error_folder, destination_folder=target_anno)
-    return True
+    return response_data
 
 # 页面数据响应
 def get_anno_data(dataset: str, current_index: int):
@@ -101,7 +123,7 @@ def save_anno_data(data_json):
     correct_path = root_folders + '/' + config.CORRECT_FILE
     error_path = root_folders + '/' + config.ERROR_FILE
 
-    # 通过文件名称查找对应的文件并删除
+    # 通过文件名称查找对应的文件（校验）
     if not file_util.file_exists_in_directory(source_root_folders, data_json['fileName']+config.ANNOTATION_SUF):
         raise BaseException('文件不存在！')
 
@@ -133,11 +155,11 @@ def save_anno_data(data_json):
     # 保存操作记录
     load_data = operator_record.load_json(config.OPERATION_RECORD_PATH)
     if load_data is None:
-        operator_record.add_entry(load_data, str(data_json['datasetName']), anno_type.get_attribute('filter'), preview=data_json['fileName']+config.ANNOTATION_SUF, count=count, correctCount=correctCount, errorCount=errorCount)
+        operator_record.add_entry(load_data, str(data_json['datasetName']), anno_type.get_attribute('filter'), preview=data_json['fileName']+config.ANNOTATION_SUF, count=count, correctCount=correctCount, errorCount=errorCount, isSync=False)
     else:
         query_data = operator_record.query_entry(load_data, str(data_json['datasetName']), anno_type.get_attribute('filter'))
         if query_data is None:
-            operator_record.add_entry(load_data, str(data_json['datasetName']), anno_type.get_attribute('filter'), preview=data_json['fileName']+config.ANNOTATION_SUF, count=count, correctCount=correctCount, errorCount=errorCount)
+            operator_record.add_entry(load_data, str(data_json['datasetName']), anno_type.get_attribute('filter'), preview=data_json['fileName']+config.ANNOTATION_SUF, count=count, correctCount=correctCount, errorCount=errorCount, isSync=False)
         else:
-            operator_record.update_entry(load_data, str(data_json['datasetName']), anno_type.get_attribute('filter'), preview=data_json['fileName']+config.ANNOTATION_SUF, count=count, correctCount=correctCount, errorCount=errorCount)
+            operator_record.update_entry(load_data, str(data_json['datasetName']), anno_type.get_attribute('filter'), preview=data_json['fileName']+config.ANNOTATION_SUF, count=count, correctCount=correctCount, errorCount=errorCount, isSync=False)
     operator_record.save_json(config.OPERATION_RECORD_PATH, load_data)
