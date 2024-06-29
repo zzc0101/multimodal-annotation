@@ -155,7 +155,7 @@
                     }
                 },
                 async sync(name) {
-                    const response = await fetch(`/qa/sync`, {
+                    const response = await fetch(`/qa/merge`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -168,6 +168,7 @@
                     } else {
                         this.$message.error(result.message);
                     }
+                    this.loadPage(this.currentPage);
                 },
                 goHome() {
                     window.location.href = "/";

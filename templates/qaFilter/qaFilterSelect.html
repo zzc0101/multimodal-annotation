@@ -168,6 +168,7 @@
                     } else {
                         this.$message.error(result.message)
                     }
+                    this.loadPage(this.currentPage);
                 },
                 goHome() {
                     window.location.href = "/";
