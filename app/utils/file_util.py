@@ -1,5 +1,6 @@
 import os, json
 import shutil
+from datetime import datetime
 
 
 # 返回目录下的所有文件夹（用于选择标注的数据集）
@@ -98,3 +99,41 @@ def copy_files(source_folder, destination_folder):
         
         # 复制文件
         shutil.copy(source_file, destination_file)
+
+
+def update_today_count(dataset_name, record_file_path, save_file_path):
+    # 读取 JSON 文件
+    with open(record_file_path, 'r', encoding='utf-8') as file:
+        json_data = json.load(file)
+
+    # 查找匹配的 JSON 数据
+    matching_json = None
+    for json_obj in json_data:
+        if json_obj['dataset'] == dataset_name:
+            matching_json = json_obj
+            break
+
+    if matching_json is None:
+        print(f'未找到 datasetName 为 {dataset_name} 的匹配文件。')
+        return
+
+    # 计算保存文件夹内 JSON 文件数量
+    json_files_count = len([f for f in os.listdir(save_file_path) if f.endswith('.json')])
+
+    # 假设需要更新的时间戳
+    timestamp = datetime.now().strftime('%Y-%m-%d')
+
+    # 更新 data 字段
+    if 'data' not in matching_json:
+        matching_json['data'] = {}
+
+    last_record_date = max(matching_json['data'].keys(), default=None)
+    if last_record_date:
+        previous_count = matching_json['data'][last_record_date]
+    else:
+        previous_count = 0
+    matching_json['data'][timestamp] = json_files_count - previous_count
+
+    # 将更新后的数据写回文件
+    with open(record_file_path, 'w', encoding='utf-8') as file:
+        json.dump(json_data, file, indent=4, ensure_ascii=False)

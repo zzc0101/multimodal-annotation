@@ -7,19 +7,23 @@ from app.services import translation, operator_record
 from config import config
 from pydantic import BaseModel
 from app.utils import anno_type
+import app.utils.file_util as file_util
+import os
 
 router = APIRouter()
 
-
 # 设置模板目录
 templates = Jinja2Templates(directory="templates/translate")
+
 
 class DatasetMarkRequest(BaseModel):
     name: str
     currentIndex: int
 
+
 class DatasetSynRequest(BaseModel):
     datasetName: str
+
 
 class DatasetSaveRequest(BaseModel):
     datasetName: str
@@ -36,6 +40,7 @@ class DatasetSaveRequest(BaseModel):
 async def redirect_translate(request: Request):
     return templates.TemplateResponse("translateSelect.html", {"request": request, "data": TRANSLATE_TITLE})
 
+
 # 响应问答筛选的分页数据
 @router.get("/translate/data")
 async def read_data(page: int = Query(1, alias="page"), size: int = Query(10, alias="size")):
@@ -44,7 +49,7 @@ async def read_data(page: int = Query(1, alias="page"), size: int = Query(10, al
     data = translation.query_data()
     paged_data = data[start:end]
     page_count = len(data) / 10 if (len(data) / 10) > 0 else 1
-    return JSONResponse({"data": paged_data,"currentPage": page, "totalItems": len(data), "pageCount": page_count })
+    return JSONResponse({"data": paged_data, "currentPage": page, "totalItems": len(data), "pageCount": page_count})
 
 
 @router.get("/translate/mark/{anno_dataset}", response_class=HTMLResponse)
@@ -87,4 +92,10 @@ async def get_data(request: DatasetMarkRequest):
 @router.post('/translate/save_data')
 async def save_data(request: DatasetSaveRequest):
     translation.save_anno_data(json.loads(request.json()))
+
+    dataset_name = request.datasetName
+    record_file_path = config.OPERATION_RECORD_PATH
+    save_file_path = os.path.join(config.TRANSLATE_ANNOTATION_FILE_PATH, config.CHINESE_FOLDER, dataset_name)
+    file_util.update_today_count(dataset_name=dataset_name, record_file_path=record_file_path,
+                                 save_file_path=save_file_path)
     return {"message": "保存成功！"}
