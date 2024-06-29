@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>标注界面</title>
+    <title>{{data.title}}</title>
     <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.10.5/viewer.css">
     <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
     <script src="https://unpkg.com/element-ui/lib/index.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.10.5/viewer.js"></script>
-    <style>
+    <style scoped>
         body {
             font-family: Arial, sans-serif;
         }
@@ -18,7 +18,7 @@
             justify-content: center;
             align-items: center;
             position: relative;
-            margin-bottom: 20px;
+            margin-bottom: 10px; /* 减小下边距 */
             background-color: #f5f5f5;
             padding: 10px 0;
             border-bottom: 1px solid #dcdcdc;
@@ -29,45 +29,88 @@
             left: 10px;
             margin-left: 10px;
         }
+        .dataset-title {
+            position: absolute;
+            right: 10px;
+            margin-right: 10px;
+        }
         .back-button {
             left: 100px;
         }
+        .save-status {
+            position: absolute;
+            bottom: -55px;
+            right: 10px; /* 水平居中 */
+            margin-right: 10px;
+        }
+        .save-status span.saved {
+            color: #4CAF50; /* 绿色 */
+            border: 1px solid #4CAF50;
+            border-radius: 4px;
+        }
+        .save-status span.unsaved {
+            color: #FF5722; /* 红色 */
+            border: 1px solid #FF5722;
+            border-radius: 4px;
+        }
         .content-container {
-            width: 80%;
+            width: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
             margin: 0 auto;
         }
-        .image-container {
+        .main-content {
             width: 100%;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+        .image-container {
+            flex: 1;
+            width: 500px;
+            height: 500px;
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-bottom: 10px;
             cursor: pointer;
+            position: relative;
+            margin-right: 20px;
         }
         .image-container img {
             max-width: 100%;
             max-height: 100%;
         }
-        .navigation-container {
+        .skeleton {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #e0e0e0;
+            animation: shimmer 2s infinite;
             display: flex;
+            justify-content: center;
             align-items: center;
-            margin-bottom: 10px;
         }
-        .jump-to-input {
-            width: 50px;
-            margin: 0 10px;
+        @keyframes shimmer {
+            0% {
+                background-position: -100% 0;
+            }
+            100% {
+                background-position: 100% 0;
+            }
         }
         .qa-container {
+            flex: 1;
             display: flex;
-            justify-content: space-around;
-            width: 100%;
-            margin-bottom: 20px;
+            flex-direction: column;
+            justify-content: space-between;
         }
         .qa-item {
-            width: 45%;
+            margin-bottom: 10px;
         }
         .qa-item p {
             margin-bottom: 5px;
@@ -83,6 +126,16 @@
             box-sizing: border-box;
             font-size: 14px;
         }
+        .navigation-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .jump-to-input {
+            width: 50px;
+            margin: 0 10px;
+        }
         .mark-buttons {
             display: flex;
             justify-content: center;
@@ -92,10 +145,23 @@
             display: flex;
             justify-content: space-around;
             width: 100%;
-            max-width: 400px;
+            max-width: 600px;
         }
         .el-button {
             min-width: 80px;
+        }
+        /* 隐藏全屏预览的关闭按钮 */
+        .el-image-viewer__btn {
+            display: none !important;
+        }
+        /* 如果需要，也可以隐藏缩放按钮等其他控件，根据实际类名进行调整 */
+        .el-image-viewer__actions {
+            display: none !important;
+        }
+
+        /* 可能还需要隐藏底部的指示器 */
+        .el-image-viewer__indicators {
+            display: none !important;
         }
     </style>
 </head>
@@ -105,37 +171,56 @@
             <el-header class="header-title">
                 <el-button class="home-button" @click="goHome" size="mini">返回首页</el-button>
                 <el-button class="back-button" @click="goBack" size="mini">返回上一级</el-button>
-                <h1>标注页面</h1>
+                <!-- <h1>{{data.title}}页面</h1> -->
+                <h1 class="save-status">保存状态：<span :class="isSaving ? 'saved' : 'unsaved'">{{'{{'}} saveStatus {{'}}'}}</span></h1>
+                <p class="file-name">{{'{{'}} fileName {{'}}'}}</p>
+                <h1 class="dataset-title">{{data.dataset}}</h1>
             </el-header>
             <el-main>
                 <div class="content-container">
-                    <div class="image-container" ref="imageContainer">
-                        <img :src="currentImage" alt="图片" v-if="currentImage">
-                        <span v-else>图片加载中...</span>
+                    <div class="main-content">
+                        <div class="image-container">
+                            <div v-if="!imageLoaded" class="skeleton"></div>
+                            <el-image
+                                :src="image"
+                                :preview-src-list="[image]"
+                                @load="imageLoaded = true"
+                                v-show="imageLoaded">
+                            </el-image>
+                        </div>
+                        <div class="qa-container">
+                            <div class="qa-item">
+                                <p>英文回答
+                                    <el-tooltip :content="answerEnTooltip" placement="top">
+                                        <i class="el-icon-question"></i>
+                                    </el-tooltip>
+                                </p>
+                                <textarea v-model="answerEn" readonly></textarea>
+                            </div>
+                            <div class="qa-item">
+                                <p>中文回答
+                                    <el-tooltip :content="answerTooltip" placement="top">
+                                        <i class="el-icon-question"></i>
+                                    </el-tooltip>
+                                </p>
+                                <textarea v-model="answer"></textarea>
+                            </div>
+                        </div>
                     </div>
                     <div class="navigation-container">
-                        <span>{{'{{'}} currentIndex + 1 {{'}}'}}/{{'{{'}} totalImages {{'}}'}}</span>
+                        <span> {{'{{'}} currentIndex + 1 {{'}}'}} / {{'{{'}} total {{'}}'}} </span>
                         <el-input v-model="jumpToIndex" class="jump-to-input" size="mini"></el-input>
                         <el-button @click="jumpTo" size="mini">跳转</el-button>
                     </div>
-                    <div class="qa-container">
-                        <div class="qa-item">
-                            <p>问题</p>
-                            <textarea v-model="question" readonly></textarea>
-                        </div>
-                        <div class="qa-item">
-                            <p>回答</p>
-                            <textarea v-model="answer"></textarea>
-                        </div>
-                    </div>
-                    <div class="mark-buttons">
-                        <el-button @click="markError" :type="!isCorrect ? 'danger' : ''">错误</el-button>
-                        <el-button @click="markCorrect" :type="isCorrect ? 'primary' : ''">正确</el-button>
-                    </div>
+{#                    <div class="mark-buttons">#}
+{#                        <el-button @click="markError" :type="!isCorrect ? 'danger' : ''">错误(Ctrl+E)</el-button>#}
+{#                        <el-button @click="markCorrect" :type="isCorrect ? 'primary' : ''">正确(Ctrl+R)</el-button>#}
+{#                    </div>#}
                     <div class="navigation-buttons">
-                        <el-button @click="prevPage" >上一页</el-button>
-                        <el-button @click="save" >保存</el-button>
-                        <el-button @click="nextPage" >下一页</el-button>
+                        <el-button @click="prevPage">上一页(Ctrl+A)</el-button>
+                        <el-button @click="save">保存(Ctrl+S)</el-button>
+                        <el-button @click="nextPage">下一页(Ctrl+D)</el-button>
+                        <el-button @click="saveNext">保存继续(Ctrl+F)</el-button>
                     </div>
                 </div>
             </el-main>
@@ -143,75 +228,127 @@
     </div>
 
     <script>
+        window.initialData = JSON.parse('{{ data | tojson | safe }}');
+    </script>
+
+    <script>
         new Vue({
             el: '#app',
             data() {
                 return {
-                    images: [],
+                    image: '',
+                    imageLoaded: false,
                     currentIndex: 0,
-                    question: '',
+                    total: 0,
                     answer: '',
+                    answerEn: '',
+                    question: '',
+                    questionEn: '',
                     jumpToIndex: 1,
-                    isCorrect: true,
-                    viewer: null
+                    {#isCorrect: true,#}
+                    viewer: null,
+                    dataset: '',
+                    fileName: '',
+                    isSaving: false,
+                    saveStatus: '已保存'
                 }
             },
             computed: {
-                currentImage() {
-                    return this.images[this.currentIndex]?.url;
+                answerTooltip() {
+                  return `问题：${this.question}`; // 中文回答的提示信息使用带前缀的 question 字段
                 },
-                totalImages() {
-                    return this.images.length;
+                answerEnTooltip() {
+                  return `问题：${this.questionEn}`; // 英文回答的提示信息使用带前缀的 questionEn 字段
                 }
             },
+            created() {
+                this.dataset = window.initialData.dataset;
+            },
             methods: {
-                async fetchData() {
-                    const response = await fetch('/qaFilter/get_data');
+                async fetchData(index) {
+                    const response = await fetch(`/translate/get_data`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ name: this.dataset,  currentIndex: index})
+                    });
                     const result = await response.json();
-                    this.images = result.images;
+                    this.imageLoaded = false; // Reset imageLoaded before loading a new image
+                    this.image = result.data.image;
+                    this.total = result.total;
                     this.currentIndex = result.currentIndex;
-                    this.updateQA();
-                },
-                updateQA() {
-                    if (this.images[this.currentIndex]) {
-                        this.question = this.images[this.currentIndex].question;
-                        this.answer = this.images[this.currentIndex].answer;
-                    }
+                    this.question = result.data.questionValue;
+                    this.questionEn = result.data.questionValueEn;
+                    this.answerEn = result.data.answerValueEn;
+                    this.answer = result.data.answerValue;
+                    this.fileName = result.data.fileName;
+                    {#this.isCorrect = result.data.correctFlag;#}
+                    this.isSaving = result.data.saveFlag;
+                    this.saveStatus = this.isSaving ? '已保存' : '未保存';
                 },
                 jumpTo() {
-                    if (this.jumpToIndex > 0 && this.jumpToIndex <= this.totalImages) {
+                    if (this.jumpToIndex > 0 && this.jumpToIndex <= this.total) {
+                        if (this.jumpToIndex - 1 == this.currentIndex) {
+                            return;
+                        }
                         this.currentIndex = this.jumpToIndex - 1;
-                        this.updateQA();
+                        this.fetchData(this.currentIndex);
                     } else {
                         this.$message.error('无效的跳转索引');
                     }
                 },
                 markCorrect() {
-                    console.log('markCorrect')
                     this.isCorrect = true;
                 },
                 markError() {
-                    console.log('markError')
                     this.isCorrect = false;
                 },
                 prevPage() {
                     if (this.currentIndex > 0) {
                         this.currentIndex--;
-                        this.updateQA();
-                    } else {
-                        this.$message.warning('已经是第一页了');
+                        this.jumpToIndex--;
+                        this.fetchData(this.currentIndex);
                     }
                 },
                 nextPage() {
-                    if (this.currentIndex < this.totalImages - 1) {
+                    if (this.currentIndex < this.total - 1) {
                         this.currentIndex++;
-                        this.updateQA();
-                    } else {
-                        this.$message.warning('已经是最后一页了');
+                        this.jumpToIndex++;
+                        this.fetchData(this.currentIndex);
                     }
                 },
-                save() {
-                    this.$message.success('保存成功');
+                async saveNext() {
+                    await this.save()
+                    if (this.isSaving) {
+                        this.nextPage();
+                    }
+                },
+                async save() {
+                    this.isSaving = false;
+                    this.saveStatus = '未保存';
+                    const params = {
+                        datasetName: this.dataset,
+                        fileName: this.fileName,
+                        currentIndex: this.currentIndex,
+                        questionValue: this.question,
+                        answerValue: this.answer,
+                        questionValueEn: this.questionEn,
+                        answerValueEn: this.answerEn
+                    };
+                    const response = await fetch(`/translate/save_data`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(params)
+                    });
+                    if (response.status == 200) {
+                        this.isSaving = true;
+                    } else {
+                        this.isSaving = false;
+                    }
+                    this.saveStatus = this.isSaving ? '已保存' : '未保存';
                 },
                 goHome() {
                     window.location.href = "/";
@@ -220,54 +357,43 @@
                     window.history.back();
                 },
                 handleShortcut(e) {
-                    if (e.key === 'e' || e.key === 'E') {
-                        this.markError();
+                    if (e.ctrlKey) {
+                        switch (e.key.toLowerCase()) {
+                            case 'e':
+                                e.preventDefault();
+                                this.markError();
+                                break;
+                            case 'r':
+                                e.preventDefault();
+                                this.markCorrect();
+                                break;
+                            case 's':
+                                e.preventDefault();
+                                this.save();
+                                break;
+                            case 'a':
+                                e.preventDefault();
+                                this.prevPage();
+                                break;
+                            case 'd':
+                                e.preventDefault();
+                                this.nextPage();
+                                break;
+                            case 'w':
+                                e.preventDefault();
+                                break;
+                            case 'f':
+                                e.preventDefault();
+                                this.saveNext();
+                                break;
+                        }
                     }
-                    if (e.key === 'r' || e.key === 'R') {
-                        this.markCorrect();
-                    }
-                    if (e.key === 's' || e.key === 'S') {
-                        this.save();
-                    }
-                    if (e.key === 'd' || e.key === 'D') {
-                        this.prevPage();
-                    }
-                    if (e.key === 'f' || e.key === 'F') {
-                        this.nextPage();
-                    }
-                },
-                initViewer() {
-                    this.viewer = new Viewer(this.$refs.imageContainer, {
-                        inline: false,
-                        viewed() {
-                            this.viewer.zoomTo(1);
-                        },
-                        zoomable: true,
-                        scalable: true,
-                        fullscreen: true,
-                        title: false,
-                        toolbar: {
-                            zoomIn: 1,
-                            zoomOut: 1,
-                            oneToOne: 1,
-                            reset: 1,
-                            prev: 1,
-                            play: {
-                                show: 1,
-                                size: 'large',
-                            },
-                            next: 1,
-                            rotateLeft: 1,
-                            rotateRight: 1,
-                            flipHorizontal: 1,
-                            flipVertical: 1,
-                        },
-                    });
                 }
             },
             mounted() {
-                this.fetchData();
-                this.initViewer();
+                this.currentIndex = window.initialData.currentIndex
+                this.jumpToIndex = this.currentIndex + 1
+                this.fetchData(this.currentIndex);
                 window.addEventListener('keydown', this.handleShortcut);
             },
             beforeDestroy() {
