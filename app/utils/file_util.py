@@ -1,6 +1,6 @@
 import os, json
 import shutil
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 # 返回目录下的所有文件夹（用于选择标注的数据集）
@@ -124,15 +124,17 @@ def update_today_count(dataset_name, record_file_path, save_file_path):
     timestamp = datetime.now().strftime('%Y-%m-%d')
 
     # 更新 data 字段
-    if 'data' not in matching_json:
-        matching_json['data'] = {}
+    if 'date' not in matching_json:
+        matching_json['date'] = {}
 
-    last_record_date = max(matching_json['data'].keys(), default=None)
-    if last_record_date:
-        previous_count = matching_json['data'][last_record_date]
-    else:
-        previous_count = 0
-    matching_json['data'][timestamp] = json_files_count - previous_count
+    # 获取前一天的日期
+    previous_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+    # 计算前一天及之前所有日期的总数量
+    previous_total_count = 0
+    for date, count in matching_json['date'].items():
+        if date <= previous_date:  # 计算当前日期及之前的记录
+            previous_total_count += count
+    matching_json['date'][timestamp] = json_files_count - previous_total_count
 
     # 将更新后的数据写回文件
     with open(record_file_path, 'w', encoding='utf-8') as file:
