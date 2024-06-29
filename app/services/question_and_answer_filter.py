@@ -1,7 +1,6 @@
 from app.utils import file_util, img_file, data_parse, anno_type
 from config import config
-import os
-import json
+import os, json, datetime
 from app.services import operator_record
 
 # 计算出问答筛选的所有文件
@@ -152,6 +151,8 @@ def save_anno_data(data_json: dict):
 
     file_path = f"{data_json['fileName']}{config.ANNOTATION_SUF}"
     
+    exists_flag = False
+
     # 校验文件是否存在
     if not file_util.file_exists_in_directory(source_root_folders, file_path):
         raise FileNotFoundError('文件不存在！')
@@ -159,6 +160,7 @@ def save_anno_data(data_json: dict):
     # 如果文件存在于正确或错误文件夹中，先删除旧文件
     for path in [correct_path, error_path]:
         if file_util.file_exists_in_directory(path, file_path):
+            exists_flag = True
             os.remove(os.path.join(path, file_path))
 
     if data_json['correctFlag']:
@@ -182,15 +184,17 @@ def save_anno_data(data_json: dict):
     
     # 保存操作记录
     load_data = operator_record.load_json(config.OPERATION_RECORD_PATH)
-    if not load_data:
-        load_data = []
-        
+    today_str = datetime.datetime.now().strftime('%Y-%m-%d')
     query_data = operator_record.query_entry(load_data, data_json['datasetName'], anno_type.get_attribute('filter'))
+    date_data = {}
     if not query_data:
+        date_data[today_str] = 1
         operator_record.add_entry(load_data, data_json['datasetName'], anno_type.get_attribute('filter'), 
-                                  preview=file_path, count=count, correctCount=correctCount, errorCount=errorCount, isSync=False)
+                                  preview=file_path, count=count, correctCount=correctCount, errorCount=errorCount, isSync=False, date=date_data)
     else:
+        date_data = query_data.get('date', {})
+        if exists_flag is False:
+            date_data[today_str] = date_data.get(today_str, 0) + 1
         operator_record.update_entry(load_data, data_json['datasetName'], anno_type.get_attribute('filter'), 
-                                     preview=file_path, count=count, correctCount=correctCount, errorCount=errorCount, isSync=False)
-    
+                                     preview=file_path, count=count, correctCount=correctCount, errorCount=errorCount, isSync=False, date=date_data)
     operator_record.save_json(config.OPERATION_RECORD_PATH, load_data)

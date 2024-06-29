@@ -69,7 +69,7 @@ async def mark_data(request: Request, anno_dataset: str):
         load_data = operator_record.query_entry(record_data, anno_dataset, anno_type.get_attribute('filter'))
         if load_data:
             # 根据加载的数据获取当前索引
-            data['currentIndex'] = question_and_answer_filter.get_current_index(config.QA_ANNOTATION_SAVE_PATH ,anno_dataset, load_data['preview'])
+            data['currentIndex'] = question_and_answer_filter.get_current_index(anno_dataset, load_data['preview'])
 
     return templates.TemplateResponse("qaFilterAnnotation.html", {"request": request, "data": data})
 

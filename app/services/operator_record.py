@@ -28,6 +28,8 @@ def update_entry(json_data, dataset, entry_type, **kwargs):
         for key, value in kwargs.items():
             if key in entry:
                 entry[key] = value
+            else:
+                entry[key] = value
     return entry
 
 def add_entry(json_data, dataset, entry_type, preview, **kwargs):

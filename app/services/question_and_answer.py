@@ -1,6 +1,6 @@
 from app.utils import file_util, img_file, data_parse, anno_type
 from config import config
-import os, json
+import os, json, datetime
 from app.services import operator_record
 
 # 计算出问答筛选的所有文件
@@ -162,6 +162,10 @@ def save_anno_data(data_json):
     source_root_folders = os.path.join(config.QA_ANNOTATION_SAVE_PATH, str(data_json['datasetName']), config.ERROR_FILE)
     save_folders = os.path.join(config.QA_ANNOTATION_MODIFICATION_FILE_PATH, str(data_json['datasetName']))
     
+    file_path = f"{data_json['fileName']}{config.ANNOTATION_SUF}"
+
+    exists_flag = False
+    
     # 通过文件名称查找对应的文件（校验）
     if not file_util.file_exists_in_directory(source_root_folders, data_json['fileName'] + config.ANNOTATION_SUF):
         raise Exception('文件不存在！')
@@ -178,6 +182,11 @@ def save_anno_data(data_json):
     if not os.path.exists(save_folders):
         os.makedirs(save_folders)
     
+    for path in [save_folders]:
+        if file_util.file_exists_in_directory(path, file_path):
+            exists_flag = True
+            os.remove(os.path.join(path, file_path))
+
     with open(os.path.join(save_folders, data_json['fileName'] + config.ANNOTATION_SUF), 'w', encoding='utf-8') as file:
         json.dump(content, file, ensure_ascii=False, indent=4)
     
@@ -186,14 +195,19 @@ def save_anno_data(data_json):
     
     # 保存操作记录
     load_data = operator_record.load_json(config.OPERATION_RECORD_PATH)
-    
-    if load_data is None:
-        operator_record.add_entry(load_data, str(data_json['datasetName']), anno_type.get_attribute('anno'), preview=data_json['fileName'] + config.ANNOTATION_SUF, count=count, saveCount=saveCount, isMerge=False)
+    today_str = datetime.datetime.now().strftime('%Y-%m-%d')
+    query_data = operator_record.query_entry(load_data, str(data_json['datasetName']), anno_type.get_attribute('anno'))
+    date_data = {}
+    if not query_data:
+        date_data[today_str] = 1
+        operator_record.add_entry(load_data, str(data_json['datasetName']), anno_type.get_attribute('anno'), 
+                                  preview=data_json['fileName'] + config.ANNOTATION_SUF, count=count, saveCount=saveCount, isMerge=False, date=date_data)
     else:
-        query_data = operator_record.query_entry(load_data, str(data_json['datasetName']), anno_type.get_attribute('anno'))
-        if query_data is None:
-            operator_record.add_entry(load_data, str(data_json['datasetName']), anno_type.get_attribute('anno'), preview=data_json['fileName'] + config.ANNOTATION_SUF, count=count, saveCount=saveCount, isMerge=False)
-        else:
-            operator_record.update_entry(load_data, str(data_json['datasetName']), anno_type.get_attribute('anno'), preview=data_json['fileName'] + config.ANNOTATION_SUF, count=count, saveCount=saveCount, isMerge=False)
-    
+        date_data = query_data.get('date', {})
+        if exists_flag is False:
+            date_data[today_str] = date_data.get(today_str, 0) + 1
+    operator_record.update_entry(load_data, str(data_json['datasetName']), 
+                                anno_type.get_attribute('anno'), 
+                                preview=data_json['fileName'] + config.ANNOTATION_SUF, 
+                                count=count, saveCount=saveCount, isMerge=False, date=date_data)
     operator_record.save_json(config.OPERATION_RECORD_PATH, load_data)
