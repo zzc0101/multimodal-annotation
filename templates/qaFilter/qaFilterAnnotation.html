@@ -287,14 +287,14 @@
                 prevPage() {
                     if (this.currentIndex > 0) {
                         this.currentIndex--;
-                        this.jumpToIndex--;
+                        this.jumpToIndex = this.currentIndex + 1;
                         this.fetchData(this.currentIndex);
                     }
                 },
                 nextPage() {
                     if (this.currentIndex < this.total - 1) {
                         this.currentIndex++;
-                        this.jumpToIndex++;
+                        this.jumpToIndex = this.currentIndex + 1;
                         this.fetchData(this.currentIndex);
                     }
                 },

@@ -13,15 +13,7 @@ def query_data():
     result_folders = config.QA_ANNOTATION_SAVE_PATH
     folders = file_util.get_all_folders(root_folders)
     
-    for name in folders:
-        data = {
-            'name': name,
-            'isSync': False,
-            'count': file_util.count_json_files(os.path.join(root_folders, name), config.ANNOTATION_SUF),
-            'correct': file_util.count_json_files(os.path.join(result_folders, name, config.CORRECT_FILE), config.ANNOTATION_SUF),
-            'error': file_util.count_json_files(os.path.join(result_folders, name, config.ERROR_FILE), config.ANNOTATION_SUF)
-        }
-        
+    for name in folders:        
         save_path = os.path.join(result_folders, name)
         correct_path = os.path.join(save_path, config.CORRECT_FILE)
         error_path = os.path.join(save_path, config.ERROR_FILE)
@@ -30,6 +22,14 @@ def query_data():
         file_util.create_folder(save_path)
         file_util.create_folder(correct_path)
         file_util.create_folder(error_path)
+        
+        data = {
+            'name': name,
+            'isSync': False,
+            'count': file_util.count_json_files(os.path.join(root_folders, name), config.ANNOTATION_SUF),
+            'correct': file_util.count_json_files(correct_path, config.ANNOTATION_SUF),
+            'error': file_util.count_json_files(error_path, config.ANNOTATION_SUF)
+        }
         
         # 查询操作记录
         record_data = operator_record.load_json(config.OPERATION_RECORD_PATH)
